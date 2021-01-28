@@ -17,6 +17,11 @@ namespace fabel_extractor
 		private SheetsService spreadsheetService;
 		private string appCredentialPath, appName, spreadsheetId, spreadsheetSheetName;
 
+
+		private List<IList<object>> currentData;
+
+		public string SpreadsheetSheetName { get => spreadsheetSheetName; set => spreadsheetSheetName = value; }
+
 		public SpreadsheetManager(string appCredentialPath, string appName, string spreadsheetId, string spreadsheetSheetName)
 		{
 			this.appCredentialPath = appCredentialPath;
@@ -26,6 +31,8 @@ namespace fabel_extractor
 
 			AuthAndInit();
 		}
+		
+
 
 		private void AuthAndInit()
 		{
@@ -49,8 +56,67 @@ namespace fabel_extractor
 			var range = $"{this.spreadsheetSheetName}!A:Z";
 			var requestBody = new ClearValuesRequest();
 
-			var deleteRequest = this.spreadsheetService.Spreadsheets.Values.Clear(requestBody, spreadsheetId, range);
+			var deleteRequest = this.spreadsheetService.Spreadsheets.Values.Clear(requestBody, this.spreadsheetId, range);
 			var deleteReponse = deleteRequest.Execute();
+		}
+
+		public void CreateRow(List<object> entry)
+		{
+			var range = $"{this.spreadsheetSheetName}!A:Z";
+			var valueRange = new ValueRange();
+
+			valueRange.Values = new List<IList<object>> { entry };
+
+			var appendRequest = this.spreadsheetService.Spreadsheets.Values.Append(valueRange, this.spreadsheetId, range);
+			appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+			var appendReponse = appendRequest.Execute();
+		}
+
+		public IList<IList<object>> ReadRow(int rowId)
+		{
+			var range = $"{this.spreadsheetSheetName}!A{rowId}:Z";
+			SpreadsheetsResource.ValuesResource.GetRequest request =
+			this.spreadsheetService.Spreadsheets.Values.Get(this.spreadsheetId, range);
+
+			var response = request.Execute();
+			return response.Values;
+		}
+
+		public void UpdateRow(int rowId, List<object> entry)
+		{
+			var range = $"{this.spreadsheetSheetName}!A{rowId}:Z";
+			var valueRange = new ValueRange();
+
+			valueRange.Values = new List<IList<object>> { entry };
+
+			var updateRequest = this.spreadsheetService.Spreadsheets.Values.Update(valueRange, this.spreadsheetId, range);
+			updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+			var appendReponse = updateRequest.Execute();
+		}
+
+		public void DeleteRow(int rowId)
+		{
+			var range = $"{this.spreadsheetSheetName}!{rowId}:Z";
+			var requestBody = new ClearValuesRequest();
+
+			var deleteRequest = this.spreadsheetService.Spreadsheets.Values.Clear(requestBody, this.spreadsheetId, range);
+			var deleteReponse = deleteRequest.Execute();
+		}
+
+		public IList<IList<object>> ReadAll()
+		{
+			var range = $"{this.spreadsheetSheetName}!A:Z";
+			SpreadsheetsResource.ValuesResource.GetRequest request =
+			this.spreadsheetService.Spreadsheets.Values.Get(this.spreadsheetId, range);
+
+			var response = request.Execute();
+			return response.Values;
+		}
+
+		public void FabelInsert(List<IList<object>> obs) {
+			foreach (List<object> row in obs) {
+				this.UpdateRow(((int)row[0])+1, row);
+			}
 		}
 
 		public void FillAll(List<IList<object>> obs)

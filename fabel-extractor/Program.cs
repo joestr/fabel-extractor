@@ -41,7 +41,7 @@ namespace fabel_extractor
 				config.Get("spreadsheet_secretsfile"),
 				config.Get("spreadsheet_appname"),
 				config.Get("spreadsheet_id"),
-				config.Get("spreadsheet_sheetname")
+				config.Get("spreadsheet_sheetname_today")
 			);
 
 			log("INFO", "Created SpreadsheetManager.");
@@ -65,11 +65,35 @@ namespace fabel_extractor
 
 				log("INFO", "Getting info and uploading ...");
 
-				spreadsheetManager.FillAll(dataManager.GetDataAsTableForSpreadsheet());
+				List<IList<object>> data = dataManager.GetDataAsTableForSpreadsheet();
 
-				log("INFO", $"Finished! Again in {config.Get("app_sleep_minutes")} minutes");
+				if (data != null) {
+					if (DateTime.Now.Date == ((DateTime)data[0][2]).AddDays(1).Date)
+					{
+						// yesterday
+						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_yesterday");
+						spreadsheetManager.FabelInsert(data);
+					}
+					if (DateTime.Now.Date == ((DateTime)data[0][2]).Date) {
+						// Today
+						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_today");
+						spreadsheetManager.FabelInsert(data);
+					}
+					if (DateTime.Now.AddDays(1).Date == ((DateTime)data[0][2]).Date)
+					{
+						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_tomorrow");
+						spreadsheetManager.FabelInsert(data);
+					}
+					if (DateTime.Now.AddDays(2).Date == ((DateTime)data[0][2]).Date)
+					{
+						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_tomorrow2");
+						spreadsheetManager.FabelInsert(data);
+					}
+				}
 
-				Thread.Sleep(TimeSpan.FromMinutes(Int32.Parse(config.Get("app_sleep_minutes"))));
+				log("INFO", $"Finished! Again in {config.Get("app_sleep_seconds")} seconds");
+
+				Thread.Sleep(TimeSpan.FromSeconds(Int32.Parse(config.Get("app_sleep_seconds"))));
 			}
 		}
 
