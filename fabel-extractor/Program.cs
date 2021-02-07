@@ -3,48 +3,55 @@ using System.Collections.Specialized;
 using System;
 using System.Threading;
 using System.Collections.Generic;
+using System.Net.Http;
+using fabel_extractor_blogger;
+using Google.Apis.Blogger.v3.Data;
 
 namespace fabel_extractor
 {
 	class Program
 	{
-		static void Main(string[] args)
+
+		private static readonly HttpClient client = new HttpClient();
+		static async System.Threading.Tasks.Task Main(string[] args)
 		{
 			NameValueCollection config;
 			config = ConfigurationManager.AppSettings;
 
-			if (bool.Parse(config.Get("verbose_local_output_only"))) {
-				log("VERBOSE", "LOCAL OUTPUT ONLY");
+			if (bool.Parse(config.Get("verbose_localdata"))) {
+				log("VERBOSE", "LOCAL DATA");
 
 				PcTerminalData localdataManager = new PcTerminalData(
 					config.Get("pcterminal_connectionstring"),
 					config.Get("pcterminal_query")
 				);
 
-				List<IList<object>> localData = localdataManager.GetDataAsTableForSpreadsheet();
+				List<FabelEntry> localData = localdataManager.LoadAndSave();
 
 				log("INFO", "---+++---+++---");
-				foreach (List<object> localrow  in localData) {
-					foreach (object column in localrow) {
-						Console.Write("'" + column + "';");
-					}
-					Console.Write("\n");
+				foreach (FabelEntry localrow  in localData) {
+						Console.WriteLine(localrow.ToString());
 				}
 				log("INFO", "---+++---+++---");
+
 				Console.ReadKey();
 				System.Environment.Exit(0);
 			}
 
-			log("INFO", "Creating SpreadsheetManager ...");
+			if (bool.Parse(config.Get("verbose_checkblogger"))) {
+				await BloggerManager.Instance.AuthAndIntitAsync(config.Get("blogger_appname"), config.Get("blogger_appcredentialspath"));
 
-			SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
-				config.Get("spreadsheet_secretsfile"),
-				config.Get("spreadsheet_appname"),
-				config.Get("spreadsheet_id"),
-				config.Get("spreadsheet_sheetname_today")
-			);
+				log("VERBOSE", "CHECK BLOGGER");
 
-			log("INFO", "Created SpreadsheetManager.");
+				log("INFO", "---+++---+++---");
+				foreach (Post p in BloggerManager.Instance.GetPosts(config.Get("blogger_blogid"))) {
+					Console.WriteLine($"Post ID: {p.Id}; Post title: {p.Title}");
+				}
+				log("INFO", "---+++---+++---");
+
+				Console.ReadKey();
+				System.Environment.Exit(0);
+			}
 
 			log("INFO", "Creating PcTerminalData manager ...");
 
@@ -55,41 +62,22 @@ namespace fabel_extractor
 
 			log("INFO", "Created PcTerminalData.");
 
+			await BloggerManager.Instance.AuthAndIntitAsync(config.Get("blogger_appname"), config.Get("blogger_appcredentialspath"));
+
 			while(true)
 			{
-				log("INFO", "Clearing all data from spreadsheet ...");
-
-				spreadsheetManager.ClearAll();
-
-				log("INFO", "Cleared all data from spreadsheet.");
 
 				log("INFO", "Getting info and uploading ...");
 
-				List<IList<object>> data = dataManager.GetDataAsTableForSpreadsheet();
+				List<FabelEntry> data = dataManager.LoadAndSave();
 
-				if (data != null) {
-					if (DateTime.Now.Date == ((DateTime)data[0][2]).AddDays(1).Date)
-					{
-						// yesterday
-						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_yesterday");
-						spreadsheetManager.FabelInsert(data);
-					}
-					if (DateTime.Now.Date == ((DateTime)data[0][2]).Date) {
-						// Today
-						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_today");
-						spreadsheetManager.FabelInsert(data);
-					}
-					if (DateTime.Now.AddDays(1).Date == ((DateTime)data[0][2]).Date)
-					{
-						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_tomorrow");
-						spreadsheetManager.FabelInsert(data);
-					}
-					if (DateTime.Now.AddDays(2).Date == ((DateTime)data[0][2]).Date)
-					{
-						spreadsheetManager.SpreadsheetSheetName = config.Get("spreadsheet_sheetname_tomorrow2");
-						spreadsheetManager.FabelInsert(data);
-					}
-				}
+				var base64Data = SerializeBase64(data);
+
+				BloggerManager.Instance.SetPostConent(
+					config.Get("blogger_blogid"),
+					config.Get("blogger_postid"),
+					base64Data
+				);
 
 				log("INFO", $"Finished! Again in {config.Get("app_sleep_seconds")} seconds");
 
@@ -100,6 +88,20 @@ namespace fabel_extractor
 		static void log(string level, string message)
 		{
 			Console.WriteLine($"[{string.Concat(DateTime.UtcNow.ToString("s"), "Z")}] [{level}]: {message}");
+		}
+
+		public static string SerializeBase64(object o)
+		{
+			// Serialize to a base 64 string
+			byte[] bytes;
+			long length = 0;
+			System.IO.MemoryStream ws = new System.IO.MemoryStream();
+			System.Runtime.Serialization.Formatters.Binary.BinaryFormatter sf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+			sf.Serialize(ws, o);
+			length = ws.Length;
+			bytes = ws.GetBuffer();
+			string encodedData = bytes.Length + ":" + Convert.ToBase64String(bytes, 0, bytes.Length, Base64FormattingOptions.None);
+			return encodedData;
 		}
 	}
 }

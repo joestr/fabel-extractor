@@ -13,6 +13,8 @@ namespace fabel_extractor
 		private OleDbConnection connection;
 		private string connectionString, query;
 
+		private List<FabelEntry> currentEntries = new List<FabelEntry>();
+
 		public PcTerminalData(string connectionString, string query)
 		{
 			this.connectionString = connectionString;
@@ -21,8 +23,10 @@ namespace fabel_extractor
 			this.connection = new OleDbConnection(this.connectionString);
 		}
 
-		public List<IList<object>> GetDataAsTableForSpreadsheet()
+		public List<FabelEntry> LoadAndSave()
 		{
+			this.currentEntries.RemoveAll(fE => fE.Date.Date.CompareTo(DateTime.Now.Date) < 1);
+
 			connection.Open();
 
 			OleDbCommand command = connection.CreateCommand();
@@ -31,33 +35,34 @@ namespace fabel_extractor
 
 			OleDbDataReader reader = command.ExecuteReader();
 
-			StreamWriter buff = new StreamWriter(new MemoryStream());
-
-			var table = new List<IList<object>>();
-
-			var row = new List<object>();
-
-			for (int fieldNumber = 0; fieldNumber < reader.FieldCount; fieldNumber++)
-			{
-				row.Add(reader.GetName(fieldNumber));
-			}
-
-			table.Add(row);
-
 			while (reader.Read())
 			{
-				row = new List<object>();
-				for (int fieldNumber = 0; fieldNumber < reader.FieldCount; fieldNumber++)
-				{
-					row.Add(reader.GetValue(fieldNumber));
-				}
-				table.Add(row);
+				currentEntries.Add(
+					new FabelEntry(
+						(int)reader.GetValue(0),
+						(int)reader.GetValue(1),
+						(DateTime)reader.GetValue(2),
+						(string)reader.GetValue(3),
+						(string)reader.GetValue(4),
+						(DateTime)reader.GetValue(5),
+						(DateTime)reader.GetValue(6),
+						(int)reader.GetValue(7),
+						reader.GetValue(8) is DBNull ? "" : (string)reader.GetValue(8),
+						reader.GetValue(9) is DBNull ? "" : (string)reader.GetValue(9),
+						reader.GetValue(10) is DBNull ? "" : (string)reader.GetValue(10),
+						reader.GetValue(11) is DBNull ? "" : (string)reader.GetValue(11),
+						reader.GetValue(12) is DBNull ? "" : (string)reader.GetValue(12),
+						reader.GetValue(13) is DBNull ? "" : (string)reader.GetValue(13),
+						reader.GetValue(14) is DBNull ? "" : (string)reader.GetValue(14),
+						(int)reader.GetValue(15)
+					)
+				);
 			}
 
 			reader.Close();
 			connection.Close();
 
-			return table;
+			return this.currentEntries;
 		}
 	}
 }
