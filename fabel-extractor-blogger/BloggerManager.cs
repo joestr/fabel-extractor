@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace fabel_extractor_blogger
+namespace fabel_extractor_common
 {
   public class BloggerManager
   {

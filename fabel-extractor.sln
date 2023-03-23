@@ -5,9 +5,7 @@ VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fabel-extractor", "fabel-extractor\fabel-extractor.csproj", "{C99DC251-E1A0-467A-B02E-EB940547E708}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fabel-extractor-backend", "fabel-extractor-backend\fabel-extractor-backend.csproj", "{CF760A05-41FB-416E-B243-E4937C3517AC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fabel-extractor-blogger", "fabel-extractor-blogger\fabel-extractor-blogger.csproj", "{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fabel-extractor-common", "fabel-extractor-blogger\fabel-extractor-common.csproj", "{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{C99DC251-E1A0-467A-B02E-EB940547E708}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C99DC251-E1A0-467A-B02E-EB940547E708}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C99DC251-E1A0-467A-B02E-EB940547E708}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF760A05-41FB-416E-B243-E4937C3517AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF760A05-41FB-416E-B243-E4937C3517AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF760A05-41FB-416E-B243-E4937C3517AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF760A05-41FB-416E-B243-E4937C3517AC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU

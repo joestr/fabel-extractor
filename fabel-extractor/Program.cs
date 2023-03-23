@@ -4,8 +4,9 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.Net.Http;
-using fabel_extractor_blogger;
+using fabel_extractor_common;
 using Google.Apis.Blogger.v3.Data;
+using System.Text;
 
 namespace fabel_extractor
 {
@@ -71,12 +72,16 @@ namespace fabel_extractor
 
 				List<FabelEntry> data = dataManager.LoadAndSave();
 
+				StringBuilder content = new StringBuilder();
+
+				data.ForEach(fE => content.AppendLine(fE.ToString()));
+
 				var base64Data = SerializeBase64(data);
 
 				BloggerManager.Instance.SetPostConent(
 					config.Get("blogger_blogid"),
 					config.Get("blogger_postid"),
-					base64Data
+					content.ToString()
 				);
 
 				log("INFO", $"Finished! Again in {config.Get("app_sleep_seconds")} seconds");

@@ -151,16 +151,15 @@
     <Compile Include="PcTerminalData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpreadsheetManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\fabel-extractor-blogger\fabel-extractor-blogger.csproj">
+    <ProjectReference Include="..\fabel-extractor-blogger\fabel-extractor-common.csproj">
       <Project>{0A34B84A-02C6-4713-81D1-A4E47E6D9CEB}</Project>
-      <Name>fabel-extractor-blogger</Name>
+      <Name>fabel-extractor-common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
